@@ -15,11 +15,30 @@ import {
 const { UIManager } = NativeModules;
 
 type Props = {
+  /**
+   * Number of milliseconds until animation finishes from start.
+   */
   duration?: number,
+  /**
+   * Set this true when animation repeats.
+   */
   loop?: boolean,
+  /**
+   * Set this true while waiting for new data from a refresh.
+   */
   marqueeOnStart?: boolean,
+  /**
+   * Number of milliseconds to wait before resetting the marquee position after it finishes.
+   */
   marqueeResetDelay?: number,
-  marqueeDelay?: number
+  /**
+   * Number of milliseconds to wait before starting or restarting marquee.
+   */
+  marqueeDelay?: number,
+  /**
+   * Callback function for when the marquee completes its animation
+   */
+  onMarqueeComplete?: () => void
 };
 
 type DefaultProps = {
@@ -31,8 +50,7 @@ type DefaultProps = {
 };
 
 type State = {
-  animating: boolean,
-  distance: number
+  animating: boolean
 };
 
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -45,7 +63,7 @@ export default class MarqueeText extends React.PureComponent<DefaultProps, Props
     duration: 3000,
     loop: false,
     marqueeOnStart: false,
-    marqueeDelay: 200,
+    marqueeDelay: 0,
     marqueeResetDelay: 0
   };
 
@@ -53,19 +71,19 @@ export default class MarqueeText extends React.PureComponent<DefaultProps, Props
     super(props);
 
     this.animatedValue = new Animated.Value(0);
-    this.contentFits = true;
     this.textRef = null;
     this.scrollViewRef = null;
 
     this.state = {
-      animating: false,
-      distance: 0
+      animating: false
     };
+
+    this.invalidateMetrics();
   }
 
   async componentDidMount() {
-    await delay(200);
-    if (!this.contentFits && this.props.marqueeOnStart) {
+    await delay(0);
+    if (this.props.marqueeOnStart) {
       this.start();
     }
   }
@@ -73,13 +91,16 @@ export default class MarqueeText extends React.PureComponent<DefaultProps, Props
   componentWillReceiveProps(nextProps) {
     const { children } = this.props;
     if (this.props.children !== nextProps.children) {
+      this.invalidateMetrics();
       this.stopAnimation();
     }
   }
 
-  async componentWillUpdate() {
-    await delay(200)
-    this.calculateMetrics();
+  async componentWillUpdate(prevProps, prevState) {
+    if (this.distance === null) {
+      this.calculateMetrics();
+    }
+
     if (this.props.marqueeOnStart) {
       this.startAnimation(this.props.marqueeDelay);
     }
@@ -113,27 +134,34 @@ export default class MarqueeText extends React.PureComponent<DefaultProps, Props
     this.startAnimation(this.props.marqueeDelay);
   }
 
-  async start(timeDelay) {
-    const { duration, loop } = this.props;
+  async start(timeDelay = this.props.marqueeDelay) {
+    const { duration, loop, onMarqueeComplete } = this.props;
 
-    if (!this.state.animating) {
+    if (this.contentFits) {
+      return;
+    } else if (!this.state.animating) {
       this.animatedValue.setValue(0);
-      this.setState({ animating: true });
 
       await delay(timeDelay);
+      await this.calculateMetrics();
 
-      Animated.timing(this.animatedValue, {
-        toValue: 1,
-        duration: duration
-      }).start(({ finished }) => {
-        if (finished) {
-          if (loop) {
-            this.resetAnimation();
-          } else {
-            this.stop();
+      if (!this.contentFits) {
+        this.setState({ animating: true });
+
+        Animated.timing(this.animatedValue, {
+          toValue: 1,
+          duration: duration
+        }).start(({ finished }) => {
+          if (finished) {
+            if (loop) {
+              this.resetAnimation();
+            } else {
+              this.stop();
+              onMarqueeComplete && onMarqueeComplete();
+            }
           }
-        }
-      });
+        });
+      }
     }
   }
 
@@ -147,12 +175,10 @@ export default class MarqueeText extends React.PureComponent<DefaultProps, Props
   }
 
   async calculateMetrics() {
-    const distance = await this.calculateDistance();
-    this.contentFits = !this.shouldAnimate(distance);
+    this.distance = await this.calculateDistance();
+    this.contentFits = !this.shouldAnimate(this.distance);
 
-    this.setState({ distance });
-
-    console.log(`Distance: ${distance}, contentFits: ${this.contentFits}`);
+    console.log(`Distance: ${this.distance}, contentFits: ${this.contentFits}`);
   }
 
   async calculateDistance() {
@@ -166,7 +192,14 @@ export default class MarqueeText extends React.PureComponent<DefaultProps, Props
     };
 
     const results = await Promise.all([asyncMethod(this.scrollViewRef), asyncMethod(this.textRef)]);
-    return results[1] - results[0];
+    return Math.floor(results[1] - results[0]);
+  }
+
+  invalidateMetrics() {
+    // Null distance is the special value to allow recalculation
+    this.distance = null;
+    // Assume the marquee does not fit until calculations show otherwise
+    this.contentFits = false;
   }
 
   render() {
@@ -174,12 +207,12 @@ export default class MarqueeText extends React.PureComponent<DefaultProps, Props
     const { animating } = this.state;
     const positionLeft = this.animatedValue.interpolate({
       inputRange: [0, 1],
-      outputRange: [0, -this.state.distance]
+      outputRange: [0, -this.distance]
     });
-    const { width, height } = StyleSheet.flatten(style);
+    const { width, height } = style ? StyleSheet.flatten(style) : {};
 
     return (
-      <View style={{ backgroundColor: 'skyblue', overflow: 'hidden', height, width }}>
+      <View style={[styles.container, { width, height }]}>
         <ScrollView
           ref={c => {
             this.scrollViewRef = c;
@@ -201,21 +234,7 @@ export default class MarqueeText extends React.PureComponent<DefaultProps, Props
           </Animated.Text>
         </ScrollView>
         {!animating
-          ? <Text
-              numberOfLines={1}
-              style={[
-                {
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  backgroundColor: 'white'
-                },
-                style
-              ]}
-              {...rest}
-            >
+          ? <Text numberOfLines={1} style={[styles.overlayText, style]} {...rest}>
               {children}
             </Text>
           : null}
@@ -223,3 +242,17 @@ export default class MarqueeText extends React.PureComponent<DefaultProps, Props
     );
   }
 }
+
+const styles = StyleSheet.create({
+  container: {
+    overflow: 'hidden'
+  },
+  overlayText: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'white'
+  }
+});

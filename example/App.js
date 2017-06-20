@@ -49,13 +49,12 @@ export default class MarqueeTextSample extends React.Component {
             {this.state.text}
           </MarqueeText>
           <View style={{ flexDirection: 'row' }}>
-            <Button title="Change Text" onPress={() => this.setState({ text: "Lorem Ipsum is simply dummy text of the printing and typesetting industry." })} />
+            <Button title="Change Text" onPress={() => this.setState({ text: "Lorem Ipsum is simply dummy" })} />
           </View>
         </View>
         <View style={{ marginVertical: 20 }}>
           <Text>Marquee Text With Controls</Text>
           <MarqueeText
-            style={{ fontSize: 16 }}
             ref={c => {
               this.marqueeTextRef0 = c;
             }}
