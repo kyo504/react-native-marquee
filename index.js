@@ -1,3 +1,6 @@
+/**
+ * @flow
+ */
 import React from 'react';
 import {
   StyleSheet,
@@ -7,34 +10,42 @@ import {
   Button,
   ScrollView,
   NativeModules,
-  findNodeHandle
+  findNodeHandle,
 } from 'react-native';
 const { UIManager } = NativeModules;
 
 type Props = {
-  duration: number,
-  loop: boolean,
-  autostart: boolean
+  duration?: number,
+  loop?: boolean,
+  marqueeOnStart?: boolean,
+  marqueeResetDelay?: number,
+  marqueeDelay?: number,
 };
 
 type DefaultProps = {
   duration: number,
   loop: boolean,
-  autostart: boolean
+  marqueeOnStart: boolean,
+  marqueeResetDelay: number,
+  marqueeDelay: number,
 };
 
 type State = {
   animating: boolean
 };
 
-class MarqueeText extends React.PureComponent<DefaultProps, Props, State> {
+const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+export default class MarqueeText extends React.PureComponent<DefaultProps, Props, State> {
   props: Props;
   state: State;
 
   static defaultProps = {
     duration: 3000,
-    loop: true,
-    autostart: false
+    loop: false,
+    marqueeOnStart: false,
+    marqueeDelay: 0,
+    marqueeResetDelay: 0,
   };
 
   constructor() {
@@ -52,10 +63,13 @@ class MarqueeText extends React.PureComponent<DefaultProps, Props, State> {
     this.scrollViewRef = null;
   }
 
-  componentDidMount() {
-    setTimeout(() => {
-      this.calculateMetrics();
-    }, 0);
+  async componentDidMount() {
+    await delay(this.props.marqueeDelay);
+    await this.calculateMetrics();
+    console.log(this.distance, this.contentFits);
+    if (!this.contentFits && this.props.marqueeOnStart) {
+      this.start();
+    }
   }
 
   componentDidUpdate() {
@@ -82,7 +96,9 @@ class MarqueeText extends React.PureComponent<DefaultProps, Props, State> {
     this.stop();
   }
 
-  resetAnimation() {
+  async resetAnimation() {
+    await delay(this.props.marqueeResetDelay);
+
     this.setState({
       animating: false
     });
@@ -91,22 +107,22 @@ class MarqueeText extends React.PureComponent<DefaultProps, Props, State> {
   }
 
   start() {
+    const { duration, loop } = this.props;
+
     if (!this.state.animating) {
       this.animatedValue.setValue(0);
-      this.setState({ animating: true }, () => {
-        if (this.state.animating) {
-          Animated.timing(this.animatedValue, {
-            toValue: 1,
-            duration: this.props.duration
-          }).start(({ finished }) => {
-            if (finished) {
-              if (this.props.loop) {
-                this.resetAnimation();
-              } else {
-                this.stop();
-              }
-            }
-          });
+      this.setState({ animating: true });
+
+      Animated.timing(this.animatedValue, {
+        toValue: 1,
+        duration: duration
+      }).start(({ finished }) => {
+        if (finished) {
+          if (loop) {
+            this.resetAnimation();
+          } else {
+            this.stop();
+          }
         }
       });
     }
@@ -149,85 +165,35 @@ class MarqueeText extends React.PureComponent<DefaultProps, Props, State> {
       inputRange: [0, 1],
       outputRange: [0, -this.distance]
     });
+    const { width, height } = StyleSheet.flatten(style);
 
     return (
-      <View style={{ backgroundColor: 'skyblue', overflow: 'hidden' }}>
+      <View style={{ backgroundColor: 'skyblue', overflow: 'hidden', height, width}}>
+        <Text numberOfLines={1} style={style} {...rest}>{children}</Text>
         <Animated.ScrollView
-          ref={c => {
-            this.scrollViewRef = c;
-          }}
+          ref={c => { this.scrollViewRef = c; }}
           style={{
             position: 'absolute',
             top: 0,
             left: positionLeft,
             right: 0,
-            bottom: 0
+            bottom: 0,
+            zIndex: animating ? 0 : -1
           }}
           contentContainerStyle={[{ backgroundColor: 'green' }]}
           horizontal
           scrollEnabled={false}
         >
           <Text
-            ref={c => {
-              this.textRef = c;
-            }}
-            style={style}
+            ref={c => { this.textRef = c; }}
             numberOfLines={1}
             {...rest}
+            style={[style, { width: null }]}
           >
             {children}
           </Text>
         </Animated.ScrollView>
-        <Text
-          numberOfLines={1}
-          {...rest}
-          style={[style, { backgroundColor: 'yellow', zIndex: animating ? -1 : 0 }]}
-        >
-          {children}
-        </Text>
       </View>
     );
   }
 }
-
-export default class MarqueeTextSample extends React.Component {
-  render() {
-    return (
-      <View style={styles.container}>
-        <MarqueeText
-          style={{ fontSize: 16 }}
-          ref={c => {
-            this.marqueeTextRef = c;
-          }}
-        >
-          Lorem Ipsum is simply dummy text of the printing and typesetting industry.
-        </MarqueeText>
-        <View style={{ flexDirection: 'row' }}>
-          <Button title="Start" onPress={() => this.marqueeTextRef.startAnimation()} />
-          <Button title="Stop" onPress={() => this.marqueeTextRef.stopAnimation()} />
-        </View>
-        <MarqueeText
-          style={{ fontSize: 16 }}
-          ref={c => {
-            this.marqueeTextRef2 = c;
-          }}
-        >
-          Lorem Ipsum is simplyaaa
-        </MarqueeText>
-        <View style={{ flexDirection: 'row' }}>
-          <Button title="Start" onPress={() => this.marqueeTextRef2.startAnimation()} />
-          <Button title="Stop" onPress={() => this.marqueeTextRef2.stopAnimation()} />
-        </View>
-
-      </View>
-    );
-  }
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center'
-  }
-});
