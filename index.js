@@ -184,7 +184,6 @@ export default class MarqueeText extends React.PureComponent<DefaultProps, Props
           ref={c => {
             this.scrollViewRef = c;
           }}
-          contentContainerStyle={[{ backgroundColor: 'green' }]}
           showsHorizontalScrollIndicator={false}
           horizontal
           scrollEnabled={false}
