@@ -7,18 +7,26 @@ import {
   Animated,
   Text,
   View,
-  Button,
   ScrollView,
   NativeModules,
-  findNodeHandle
+  findNodeHandle,
 } from 'react-native';
+
+import type {
+  StyleObj,
+} from '../../node_modules/react-native/Libraries/StyleSheet/StyleSheetTypes';
+
 const { UIManager } = NativeModules;
 
 type Props = {
   /**
+   * style
+   */
+  style?: StyleObj,
+  /**
    * Number of milliseconds until animation finishes from start.
    */
-  duration?: number,
+  speed?: number,
   /**
    * Set this true when animation repeats.
    */
@@ -38,131 +46,133 @@ type Props = {
   /**
    * Callback function for when the marquee completes its animation
    */
-  onMarqueeComplete?: () => void
+  onMarqueeComplete?: Function,
+  /**
+   * Text passed
+   */
+  children: string
 };
 
 type DefaultProps = {
-  duration: number,
+  style: StyleObj,
+  speed: number,
   loop: boolean,
   marqueeOnStart: boolean,
   marqueeResetDelay: number,
-  marqueeDelay: number
+  marqueeDelay: number,
+  onMarqueeComplete: Function
 };
 
 type State = {
   animating: boolean
 };
 
-const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
-
 export default class MarqueeText extends React.PureComponent<DefaultProps, Props, State> {
   props: Props;
   state: State;
 
+  distance: number | null;
+  contentFits: boolean;
+  animatedValue: Object;
+  textRef: ?Object;
+  scrollViewRef: ?Object;
+  timer: number | null;
+
   static defaultProps = {
-    duration: 3000,
+    style: {},
+    speed: 100,
     loop: false,
     marqueeOnStart: false,
     marqueeDelay: 0,
-    marqueeResetDelay: 0
+    marqueeResetDelay: 0,
+    onMarqueeComplete: () => {},
   };
 
-  constructor(props) {
+  constructor(props: Props) {
     super(props);
 
     this.animatedValue = new Animated.Value(0);
+    this.contentFits = false;
+    this.distance = null;
     this.textRef = null;
     this.scrollViewRef = null;
 
     this.state = {
-      animating: false
+      animating: false,
     };
 
     this.invalidateMetrics();
   }
 
-  async componentDidMount() {
-    await delay(0);
+  componentDidMount() {
+    const { marqueeDelay } = this.props;
     if (this.props.marqueeOnStart) {
-      this.start();
+      this.startAnimation(marqueeDelay);
     }
   }
 
-  componentWillReceiveProps(nextProps) {
-    const { children } = this.props;
+  componentWillReceiveProps(nextProps: Props) {
     if (this.props.children !== nextProps.children) {
       this.invalidateMetrics();
-      this.stopAnimation();
-    }
-  }
-
-  async componentWillUpdate(prevProps, prevState) {
-    if (this.distance === null) {
-      this.calculateMetrics();
-    }
-
-    if (this.props.marqueeOnStart) {
-      this.startAnimation(this.props.marqueeDelay);
+      this.resetAnimation();
     }
   }
 
   componentWillUnmount() {
-    if (this.state.animating) {
-      this.stop();
-    }
+    this.clearTimeout();
   }
 
-  startAnimation(delay) {
-    if (this.state.animating || this.contentFits) {
+  startAnimation(timeDelay: number) {
+    if (this.state.animating) {
       return;
     }
 
-    this.start(delay);
+    this.start(timeDelay);
   }
 
   stopAnimation() {
     this.stop();
   }
 
-  async resetAnimation() {
-    await delay(this.props.marqueeResetDelay);
-
-    this.setState({
-      animating: false
+  /**
+   * Resets the marquee and restarts it after `marqueeDelay` millisecons.
+   */
+  resetAnimation() {
+    const marqueeResetDelay = Math.max(100, this.props.marqueeResetDelay);
+    this.animatedValue.setValue(0);
+    this.setState({ animating: false }, () => {
+      this.startAnimation(marqueeResetDelay);
     });
-
-    this.startAnimation(this.props.marqueeDelay);
   }
 
-  async start(timeDelay = this.props.marqueeDelay) {
-    const { duration, loop, onMarqueeComplete } = this.props;
+  start(timeDelay: number) {
+    const { speed, loop, onMarqueeComplete } = this.props;
 
-    if (this.contentFits) {
-      return;
-    } else if (!this.state.animating) {
-      this.animatedValue.setValue(0);
-
-      await delay(timeDelay);
-      await this.calculateMetrics();
+    const callback = () => {
+      this.calculateMetrics();
 
       if (!this.contentFits) {
-        this.setState({ animating: true });
+        this.setState({
+          animating: true,
+        });
 
         Animated.timing(this.animatedValue, {
           toValue: 1,
-          duration: duration
+          duration: this.distance * speed,
         }).start(({ finished }) => {
           if (finished) {
             if (loop) {
               this.resetAnimation();
             } else {
               this.stop();
-              onMarqueeComplete && onMarqueeComplete();
+              onMarqueeComplete();
             }
           }
         });
       }
-    }
+    };
+
+    this.setTimeout(callback, timeDelay);
   }
 
   stop() {
@@ -170,29 +180,28 @@ export default class MarqueeText extends React.PureComponent<DefaultProps, Props
     this.setState({ animating: false });
   }
 
-  shouldAnimate(distance) {
+  shouldAnimate(distance: number) {
     return distance > 0;
   }
 
   async calculateMetrics() {
     this.distance = await this.calculateDistance();
     this.contentFits = !this.shouldAnimate(this.distance);
-
-    console.log(`Distance: ${this.distance}, contentFits: ${this.contentFits}`);
+    // console.log(`distance: ${this.distance}, contentFits: ${this.contentFits}`);
   }
 
   async calculateDistance() {
-    const asyncMethod = function(node) {
-      return new Promise(resolve => {
-        UIManager.measure(findNodeHandle(node), function(x, y, w, h, ox, oy) {
+    const asyncMethod = node =>
+      new Promise(resolve => {
+        UIManager.measure(findNodeHandle(node), (x, y, w) =>
           // console.log('Width: ' + w);
-          return resolve(w);
-        });
+          resolve(w),
+        );
       });
-    };
 
     const results = await Promise.all([asyncMethod(this.scrollViewRef), asyncMethod(this.textRef)]);
-    return Math.floor(results[1] - results[0]);
+    // return Math.floor(results[1] - results[0]);
+    return results[1] - results[0];
   }
 
   invalidateMetrics() {
@@ -202,14 +211,33 @@ export default class MarqueeText extends React.PureComponent<DefaultProps, Props
     this.contentFits = false;
   }
 
+  /**
+   * Clears the timer
+   */
+  clearTimeout() {
+    if (this.timer) {
+      clearTimeout(this.timer);
+      this.timer = null;
+      // console.log("Currently running timeout is cleared!!!");
+    }
+  }
+
+  /**
+   * Starts a new timer
+    */
+  setTimeout(fn: Function, time: number = 0) {
+    this.clearTimeout();
+    this.timer = setTimeout(fn, time);
+  }
+
   render() {
     const { children, style, ...rest } = this.props;
     const { animating } = this.state;
     const positionLeft = this.animatedValue.interpolate({
       inputRange: [0, 1],
-      outputRange: [0, -this.distance]
+      outputRange: [0, -this.distance],
     });
-    const { width, height } = style ? StyleSheet.flatten(style) : {};
+    const { width, height } = StyleSheet.flatten(style);
 
     return (
       <View style={[styles.container, { width, height }]}>
@@ -220,7 +248,7 @@ export default class MarqueeText extends React.PureComponent<DefaultProps, Props
           showsHorizontalScrollIndicator={false}
           horizontal
           scrollEnabled={false}
-          onContentSizeChange={(width, height) => this.calculateMetrics()}
+          onContentSizeChange={() => this.calculateMetrics()}
         >
           <Animated.Text
             ref={c => {
@@ -235,8 +263,8 @@ export default class MarqueeText extends React.PureComponent<DefaultProps, Props
         </ScrollView>
         {!animating
           ? <Text numberOfLines={1} style={[styles.overlayText, style]} {...rest}>
-              {children}
-            </Text>
+            {children}
+          </Text>
           : null}
       </View>
     );
@@ -245,14 +273,9 @@ export default class MarqueeText extends React.PureComponent<DefaultProps, Props
 
 const styles = StyleSheet.create({
   container: {
-    overflow: 'hidden'
+    overflow: 'hidden',
   },
   overlayText: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'white'
-  }
+    ...StyleSheet.absoluteFillObject,
+  },
 });
