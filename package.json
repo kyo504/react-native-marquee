@@ -1,5 +1,5 @@
 {
-  "name": "react-native-marquee-text",
+  "name": "react-native-marquee",
   "version": "0.1.0",
   "description": "React Native Marquee Text Component",
   "main": "index.js",
@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/kyo504/react-native-marquee-text.git"
+    "url": "git+https://github.com/kyo504/react-native-marquee.git"
   },
   "keywords": [
     "react-native",
@@ -22,7 +22,7 @@
   "author": "Hunkyo Jung <hunkyo.jung@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/kyo504/react-native-marquee-text/issues"
+    "url": "https://github.com/kyo504/react-native-marquee/issues"
   },
-  "homepage": "https://github.com/kyo504/react-native-marquee-text#readme"
+  "homepage": "https://github.com/kyo504/react-native-marquee#readme"
 }
