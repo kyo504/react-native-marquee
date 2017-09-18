@@ -3,7 +3,7 @@
  */
 import React from 'react';
 import { StyleSheet, View, Button, Text, Animated } from 'react-native';
-import MarqueeText from 'react-native-marquee-text';
+import MarqueeText from 'react-native-marquee';
 
 export default class MarqueeTextSample extends React.Component {
   constructor(props) {
