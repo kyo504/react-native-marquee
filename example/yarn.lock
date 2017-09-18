@@ -3319,8 +3319,9 @@ react-devtools-core@^2.5.0:
     shell-quote "^1.6.1"
     ws "^2.0.3"
 
-"react-native-marquee-text@file:./../":
+react-native-marquee@^0.1.0:
   version "0.1.0"
+  resolved "https://registry.yarnpkg.com/react-native-marquee/-/react-native-marquee-0.1.0.tgz#d25df9ff75f03f3f098557387a293370e96ddb2e"
 
 react-native@0.48.3:
   version "0.48.3"
