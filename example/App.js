@@ -20,21 +20,21 @@ export default class MarqueeTextSample extends React.Component {
         <View style={{ marginVertical: 20 }}>
           <Text>Marquee On Start</Text>
           <MarqueeText
-            style={{ fontSize: 24, backgroundColor: 'white' }}
-            duration={1000}
+            style={{ fontSize: 24 }}
+            duration={3000}
             marqueeOnStart
             loop
             marqueeDelay={1000}
             marqueeResetDelay={1000}
           >
-            Lorem Ipsum is simply dummy text of the printing and typesetting industry.
+            Lorem Ipsum is simply dummy text of the printing and typesetting industry and typesetting industry.
           </MarqueeText>
         </View>
         <View style={{ marginVertical: 20 }}>
           <Text>Marquee On Start</Text>
           <MarqueeText
-            style={{ fontSize: 24, backgroundColor: 'white' }}
-            duration={6000}
+            style={{ fontSize: 24 }}
+            duration={3000}
             marqueeOnStart
             loop
             marqueeDelay={1000}
@@ -61,12 +61,7 @@ export default class MarqueeTextSample extends React.Component {
         </View>
         <View style={{ marginVertical: 20 }}>
           <Text>Marquee Text With Controls</Text>
-          <MarqueeText
-            style={{ fontSize: 20 }}
-            ref={c => {
-              this.marqueeTextRef = c;
-            }}
-          >
+          <MarqueeText style={{ fontSize: 20 }} ref={c => (this.marqueeTextRef = c)}>
             Lorem Ipsum is simply dummy text of
           </MarqueeText>
           <View style={{ flexDirection: 'row' }}>

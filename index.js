@@ -11,7 +11,6 @@ import {
   NativeModules,
   findNodeHandle,
 } from 'react-native';
-
 import type { StyleObj } from '../../node_modules/react-native/Libraries/StyleSheet/StyleSheetTypes';
 
 const { UIManager } = NativeModules;
@@ -24,7 +23,7 @@ type Props = {
   /**
    * Number of milliseconds until animation finishes from start.
    */
-  speed?: number,
+  duration?: number,
   /**
    * Set this true when animation repeats.
    */
@@ -57,7 +56,7 @@ type Props = {
 
 type DefaultProps = {
   style: StyleObj,
-  speed: number,
+  duration: number,
   loop: boolean,
   marqueeOnStart: boolean,
   marqueeResetDelay: number,
@@ -77,12 +76,12 @@ export default class MarqueeText extends PureComponent<DefaultProps, Props, Stat
   contentFits: boolean;
   animatedValue: Object;
   textRef: ?Text;
-  scrollViewRef: ?ScrollView;
+  containerRef: ?ScrollView;
   timer: ?number;
 
   static defaultProps = {
     style: {},
-    speed: 100,
+    duration: 3000,
     loop: false,
     marqueeOnStart: false,
     marqueeDelay: 0,
@@ -98,7 +97,7 @@ export default class MarqueeText extends PureComponent<DefaultProps, Props, Stat
     this.contentFits = false;
     this.distance = null;
     this.textRef = null;
-    this.scrollViewRef = null;
+    this.containerRef = null;
 
     this.state = {
       animating: false,
@@ -152,31 +151,31 @@ export default class MarqueeText extends PureComponent<DefaultProps, Props, Stat
   }
 
   start(timeDelay: number) {
-    const { speed, loop, onMarqueeComplete, useNativeDriver } = this.props;
+    const { duration, loop, onMarqueeComplete, useNativeDriver } = this.props;
 
     const callback = () => {
-      this.calculateMetrics();
+      this.setState({ animating: true });
 
-      if (!this.contentFits) {
-        this.setState({
-          animating: true,
-        });
+      this.setTimeout(() => {
+        this.calculateMetrics();
 
-        Animated.timing(this.animatedValue, {
-          toValue: -this.distance,
-          duration: this.distance / speed * 1000,
-          useNativeDriver,
-        }).start(({ finished }) => {
-          if (finished) {
-            if (loop) {
-              this.resetAnimation();
-            } else {
-              this.stop();
-              onMarqueeComplete();
+        if (!this.contentFits) {
+          Animated.timing(this.animatedValue, {
+            toValue: -this.distance,
+            duration: duration,
+            useNativeDriver,
+          }).start(({ finished }) => {
+            if (finished) {
+              if (loop) {
+                this.resetAnimation();
+              } else {
+                this.stop();
+                onMarqueeComplete();
+              }
             }
-          }
-        });
-      }
+          });
+        }
+      }, 100);
     };
 
     this.setTimeout(callback, timeDelay);
@@ -193,32 +192,26 @@ export default class MarqueeText extends PureComponent<DefaultProps, Props, Stat
 
   async calculateMetrics() {
     try {
-      this.distance = await this.calculateDistance();
+      const measureWidth = node =>
+        new Promise(resolve => {
+          UIManager.measure(findNodeHandle(node), (x, y, w) => {
+            // console.log('Width: ' + w);
+            return resolve(w);
+          });
+        });
+
+      const [containerWidth, textWidth] = await Promise.all([
+        measureWidth(this.containerRef),
+        measureWidth(this.textRef),
+      ]);
+
+      this.distance = textWidth - containerWidth;
       this.contentFits = !this.shouldAnimate(this.distance);
+
+      return [];
       // console.log(`distance: ${this.distance}, contentFits: ${this.contentFits}`);
     } catch (error) {
       console.warn(error);
-    }
-  }
-
-  async calculateDistance() {
-    const measureWidth = node =>
-      new Promise(resolve => {
-        UIManager.measure(findNodeHandle(node), (x, y, w) => {
-          console.log('Width: ' + w);
-          return resolve(w);
-        });
-      });
-
-    try {
-      const [containerWidth, textWidth] = await Promise.all([
-        measureWidth(this.scrollViewRef),
-        measureWidth(this.textRef),
-      ]);
-      // return Math.floor(results[1] - results[0]);
-      return containerWidth - textWidth;
-    } catch (error) {
-      return new Error(error);
     }
   }
 
@@ -255,8 +248,13 @@ export default class MarqueeText extends PureComponent<DefaultProps, Props, Stat
 
     return (
       <View style={[styles.container, { width, height }]}>
+        <Text numberOfLines={1} {...rest} style={[ style, { opacity: animating ? 0 : 1 }]}>
+          {children}
+        </Text>
         <ScrollView
-          ref={c => (this.scrollViewRef = c)}
+          ref={c => (this.containerRef = c)}
+          style={StyleSheet.absoluteFillObject}
+          display={animating ? 'flex' : 'none'}
           showsHorizontalScrollIndicator={false}
           horizontal
           scrollEnabled={false}
@@ -266,16 +264,11 @@ export default class MarqueeText extends PureComponent<DefaultProps, Props, Stat
             ref={c => (this.textRef = c)}
             numberOfLines={1}
             {...rest}
-            style={[style, { transform: [{ translateX: this.animatedValue }] }]}
+            style={[style, { transform: [{ translateX: this.animatedValue }], width: null }]}
           >
             {children}
           </Animated.Text>
         </ScrollView>
-        {!animating ? (
-          <Text numberOfLines={1} display="none" style={[styles.overlayText, style]} {...rest}>
-            {children}
-          </Text>
-        ) : null}
       </View>
     );
   }
@@ -284,10 +277,5 @@ export default class MarqueeText extends PureComponent<DefaultProps, Props, Stat
 const styles = StyleSheet.create({
   container: {
     overflow: 'hidden',
-  },
-  overlayText: {
-    ...StyleSheet.absoluteFillObject,
-    borderWidth: 1,
-    borderColor: 'blue',
   },
 });
