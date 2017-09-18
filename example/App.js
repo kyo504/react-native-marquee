@@ -10,8 +10,8 @@ export default class MarqueeTextSample extends React.Component {
     super(props);
 
     this.state = {
-      text: 'Resets the marquee and restarts it after `marqueeDelay` millisecons.'
-    }
+      text: 'Resets the marquee and restarts it after `marqueeDelay` millisecons.',
+    };
   }
 
   render() {
@@ -21,10 +21,7 @@ export default class MarqueeTextSample extends React.Component {
           <Text>Marquee On Start</Text>
           <MarqueeText
             style={{ fontSize: 24, backgroundColor: 'white' }}
-            ref={c => {
-              this.ref = c;
-            }}
-            duration={6000}
+            duration={1000}
             marqueeOnStart
             loop
             marqueeDelay={1000}
@@ -37,9 +34,6 @@ export default class MarqueeTextSample extends React.Component {
           <Text>Marquee On Start</Text>
           <MarqueeText
             style={{ fontSize: 24, backgroundColor: 'white' }}
-            ref={c => {
-              this.ref = c;
-            }}
             duration={6000}
             marqueeOnStart
             loop
@@ -49,16 +43,15 @@ export default class MarqueeTextSample extends React.Component {
             {this.state.text}
           </MarqueeText>
           <View style={{ flexDirection: 'row' }}>
-            <Button title="Change Text" onPress={() => this.setState({ text: "Lorem Ipsum is simply dummy" })} />
+            <Button
+              title="Change Text"
+              onPress={() => this.setState({ text: 'Lorem Ipsum is simply dummy' })}
+            />
           </View>
         </View>
         <View style={{ marginVertical: 20 }}>
           <Text>Marquee Text With Controls</Text>
-          <MarqueeText
-            ref={c => {
-              this.marqueeTextRef0 = c;
-            }}
-          >
+          <MarqueeText ref={c => (this.marqueeTextRef0 = c)}>
             Lorem Ipsum is simply dummy text of the printing and typesetting industry.
           </MarqueeText>
           <View style={{ flexDirection: 'row' }}>
@@ -80,23 +73,18 @@ export default class MarqueeTextSample extends React.Component {
             <Button title="Start" onPress={() => this.marqueeTextRef.startAnimation()} />
             <Button title="Stop" onPress={() => this.marqueeTextRef.stopAnimation()} />
           </View>
-        </View>        
+        </View>
         <View>
           <Text>Fixed Text Width</Text>
-          <MarqueeText
-            style={{ fontSize: 16, width: 150 }}
-            ref={c => {
-              this.marqueeTextRef2 = c;
-            }}
-          >
-            Lorem Ipsum is simply dummy text of 
+          <MarqueeText style={{ fontSize: 16, width: 150 }} ref={c => (this.marqueeTextRef2 = c)}>
+            Lorem Ipsum is simply dummy text of
           </MarqueeText>
           <View style={{ flexDirection: 'row' }}>
             <Button title="Start" onPress={() => this.marqueeTextRef2.startAnimation()} />
             <Button title="Stop" onPress={() => this.marqueeTextRef2.stopAnimation()} />
           </View>
         </View>
-        <Text style={{backgroundColor:'red'}}>Lorem Ipsum is simply dummy text of</Text>
+        <Text style={{ backgroundColor: 'red' }}>Lorem Ipsum is simply dummy text of</Text>
       </View>
     );
   }
@@ -105,6 +93,6 @@ export default class MarqueeTextSample extends React.Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center'
-  }
+    justifyContent: 'center',
+  },
 });
