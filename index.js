@@ -49,9 +49,9 @@ type Props = {
    */
   children: string,
   /**
-   * Set this truenif you want to use native driver
+   * Set this truen if you want to use native driver
    */
-  useNativeDriver: boolean,
+  useNativeDriver?: boolean,
 };
 
 type DefaultProps = {

@@ -17,8 +17,7 @@ export default class MarqueeTextSample extends React.Component {
   render() {
     return (
       <View style={styles.container}>
-        <View style={{ marginVertical: 20 }}>
-          <Text>Marquee On Start</Text>
+
           <MarqueeText
             style={{ fontSize: 24 }}
             duration={3000}
