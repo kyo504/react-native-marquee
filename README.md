@@ -1,4 +1,4 @@
-# react-native-marquee-text
+# react-native-marquee
 
 A pure JavaScript marquee text component for react native.
 
