@@ -5,6 +5,7 @@ import React, { PureComponent } from 'react';
 import {
   StyleSheet,
   Animated,
+  Easing,
   Text,
   View,
   ScrollView,
@@ -24,6 +25,10 @@ type Props = {
    * Number of milliseconds until animation finishes from start.
    */
   duration?: number,
+  /**
+   * Easing function to define animation curve.
+   */
+  easing?: Function,
   /**
    * Set this true when animation repeats.
    */
@@ -57,6 +62,7 @@ type Props = {
 type DefaultProps = {
   style: StyleObj,
   duration: number,
+  easing: Function,
   loop: boolean,
   marqueeOnStart: boolean,
   marqueeResetDelay: number,
@@ -82,6 +88,7 @@ export default class MarqueeText extends PureComponent<DefaultProps, Props, Stat
   static defaultProps = {
     style: {},
     duration: 3000,
+    easing: Easing.inOut(Easing.ease),
     loop: false,
     marqueeOnStart: false,
     marqueeDelay: 0,
@@ -143,15 +150,18 @@ export default class MarqueeText extends PureComponent<DefaultProps, Props, Stat
    * Resets the marquee and restarts it after `marqueeDelay` millisecons.
    */
   resetAnimation() {
+    const { marqueeDelay } = this.props
     const marqueeResetDelay = Math.max(100, this.props.marqueeResetDelay);
-    this.animatedValue.setValue(0);
-    this.setState({ animating: false }, () => {
-      this.startAnimation(marqueeResetDelay);
-    });
+    this.setTimeout(() => {
+      this.animatedValue.setValue(0);
+      this.setState({ animating: false }, () => {
+        this.startAnimation(marqueeDelay)
+      });
+    }, marqueeResetDelay)
   }
 
   start(timeDelay: number) {
-    const { duration, loop, onMarqueeComplete, useNativeDriver } = this.props;
+    const { duration, easing, loop, onMarqueeComplete, useNativeDriver } = this.props;
 
     const callback = () => {
       this.setState({ animating: true });
@@ -163,6 +173,7 @@ export default class MarqueeText extends PureComponent<DefaultProps, Props, Stat
           Animated.timing(this.animatedValue, {
             toValue: -this.distance,
             duration: duration,
+            easing: easing,
             useNativeDriver,
           }).start(({ finished }) => {
             if (finished) {
