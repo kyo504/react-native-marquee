@@ -62,6 +62,7 @@ const styles = StyleSheet.create({
 | marqueeDelay          | number   | true     | 0                         | Number of milliseconds to wait before starting or restarting marquee.
 | onMarqueeComplete     | function | true     | -                         | Callback function for when the marquee completes its animation
 | useNativeDriver       | boolean  | true     | false                     | Set this truen if you want to use native driver
+| easing                | function | true     | inOut                     | Easing function to define animation curve.
 
 ## Methods
 
