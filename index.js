@@ -164,12 +164,12 @@ export default class MarqueeText extends PureComponent<DefaultProps, Props, Stat
     const { duration, easing, loop, onMarqueeComplete, useNativeDriver } = this.props;
 
     const callback = () => {
-      this.setState({ animating: true });
-
       this.setTimeout(() => {
         this.calculateMetrics();
 
         if (!this.contentFits) {
+          this.setState({ animating: true });
+
           Animated.timing(this.animatedValue, {
             toValue: -this.distance,
             duration: duration,
@@ -185,6 +185,11 @@ export default class MarqueeText extends PureComponent<DefaultProps, Props, Stat
               }
             }
           });
+        } else {
+          this.setTimeout(() => {
+            this.stop();
+            onMarqueeComplete();
+          }, duration)
         }
       }, 100);
     };
