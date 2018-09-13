@@ -1,6 +1,3 @@
-/**
- * @flow
- */
 import React from 'react';
 import { StyleSheet, View, Button, Text, Animated } from 'react-native';
 import MarqueeText from 'react-native-marquee';
@@ -17,7 +14,7 @@ export default class MarqueeTextSample extends React.Component {
   render() {
     return (
       <View style={styles.container}>
-
+        <View style={{ marginVertical: 20 }}>
           <MarqueeText
             style={{ fontSize: 24 }}
             duration={3000}
@@ -68,7 +65,7 @@ export default class MarqueeTextSample extends React.Component {
             <Button title="Stop" onPress={() => this.marqueeTextRef.stopAnimation()} />
           </View>
         </View>
-        <View>
+        <View style={{ marginVertical: 20 }}>
           <Text>Fixed Text Width</Text>
           <MarqueeText style={{ fontSize: 16, width: 150 }} ref={c => (this.marqueeTextRef2 = c)}>
             Lorem Ipsum is simply dummy text of
