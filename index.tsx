@@ -1,7 +1,4 @@
-/**
- * @flow
- */
-import React, { PureComponent } from 'react';
+import React, { PureComponent, ReactNode } from 'react';
 import {
   StyleSheet,
   Animated,
@@ -11,81 +8,32 @@ import {
   ScrollView,
   NativeModules,
   findNodeHandle,
+  StyleProp,
+  TextStyle,
+  EasingFunction,
 } from 'react-native';
-import type { StyleObj } from '../../node_modules/react-native/Libraries/StyleSheet/StyleSheetTypes';
 
 const { UIManager } = NativeModules;
 
-type Props = {
-  /**
-   * style
-   */
-  style?: StyleObj,
-  /**
-   * Number of milliseconds until animation finishes from start.
-   */
-  duration?: number,
-  /**
-   * Easing function to define animation curve.
-   */
-  easing?: Function,
-  /**
-   * Set this true when animation repeats.
-   */
-  loop?: boolean,
-  /**
-   * Set this true while waiting for new data from a refresh.
-   */
-  marqueeOnStart?: boolean,
-  /**
-   * Number of milliseconds to wait before resetting the marquee position after it finishes.
-   */
-  marqueeResetDelay?: number,
-  /**
-   * Number of milliseconds to wait before starting or restarting marquee.
-   */
-  marqueeDelay?: number,
-  /**
-   * Callback function for when the marquee completes its animation
-   */
-  onMarqueeComplete?: Function,
-  /**
-   * Text passed
-   */
-  children: string,
-  /**
-   * Set this truen if you want to use native driver
-   */
-  useNativeDriver?: boolean,
-};
+export interface IMarqueeTextProps {
+  style?: StyleProp<TextStyle>;
+  duration?: number;
+  easing?: EasingFunction;
+  loop?: boolean;
+  marqueeOnStart?: boolean;
+  marqueeResetDelay?: number;
+  marqueeDelay?: number;
+  onMarqueeComplete?: () => void;
+  children: string;
+  useNativeDriver?: boolean;
+}
 
-type DefaultProps = {
-  style: StyleObj,
-  duration: number,
-  easing: Function,
-  loop: boolean,
-  marqueeOnStart: boolean,
-  marqueeResetDelay: number,
-  marqueeDelay: number,
-  onMarqueeComplete: Function,
-};
+export interface IMarqueeTextState {
+  animating: boolean;
+}
 
-type State = {
-  animating: boolean,
-};
-
-export default class MarqueeText extends PureComponent<DefaultProps, Props, State> {
-  props: Props;
-  state: State;
-
-  distance: ?number;
-  contentFits: boolean;
-  animatedValue: Object;
-  textRef: ?Text;
-  containerRef: ?ScrollView;
-  timer: ?number;
-
-  static defaultProps = {
+export default class MarqueeText extends PureComponent<IMarqueeTextProps, IMarqueeTextState> {
+  static defaultProps: Partial<IMarqueeTextProps> = {
     style: {},
     duration: 3000,
     easing: Easing.inOut(Easing.ease),
@@ -97,44 +45,56 @@ export default class MarqueeText extends PureComponent<DefaultProps, Props, Stat
     useNativeDriver: true,
   };
 
-  constructor(props: Props) {
+  private static shouldAnimate(distance: number): boolean {
+    return distance > 0;
+  }
+
+  state: IMarqueeTextState = {
+    animating: false,
+  };
+
+  private distance: number | null;
+  private contentFits: boolean;
+  private animatedValue: Animated.Value;
+  private textRef: React.RefObject<Text>;
+  private containerRef: React.RefObject<ScrollView>;
+  private timer: number;
+
+  constructor(props: IMarqueeTextProps) {
     super(props);
 
     this.animatedValue = new Animated.Value(0);
     this.contentFits = false;
     this.distance = null;
-    this.textRef = null;
-    this.containerRef = null;
-
-    this.state = {
-      animating: false,
-    };
+    this.textRef = React.createRef();
+    this.containerRef = React.createRef();
+    this.timer = 0;
 
     this.invalidateMetrics();
   }
 
-  componentDidMount() {
+  componentDidMount(): void {
     const { marqueeDelay } = this.props;
     if (this.props.marqueeOnStart) {
-      this.startAnimation(marqueeDelay);
+      this.startAnimation(marqueeDelay!);
     }
   }
 
-  componentWillReceiveProps(nextProps: Props) {
+  componentWillReceiveProps(nextProps: IMarqueeTextProps): void {
     if (this.props.children !== nextProps.children) {
       this.invalidateMetrics();
       this.resetAnimation();
     }
   }
 
-  componentWillUnmount() {
+  componentWillUnmount(): void {
     if (this.state.animating) {
       this.stopAnimation();
     }
     this.clearTimeout();
   }
 
-  startAnimation(timeDelay: number) {
+  startAnimation(timeDelay: number): void {
     if (this.state.animating) {
       return;
     }
@@ -142,7 +102,7 @@ export default class MarqueeText extends PureComponent<DefaultProps, Props, Stat
     this.start(timeDelay);
   }
 
-  stopAnimation() {
+  stopAnimation(): void {
     this.stop();
   }
 
@@ -150,14 +110,14 @@ export default class MarqueeText extends PureComponent<DefaultProps, Props, Stat
    * Resets the marquee and restarts it after `marqueeDelay` millisecons.
    */
   resetAnimation() {
-    const { marqueeDelay } = this.props
-    const marqueeResetDelay = Math.max(100, this.props.marqueeResetDelay);
+    const { marqueeDelay, marqueeResetDelay } = this.props;
+    const delay = Math.max(100, marqueeResetDelay!);
     this.setTimeout(() => {
       this.animatedValue.setValue(0);
       this.setState({ animating: false }, () => {
-        this.startAnimation(marqueeDelay)
+        this.startAnimation(marqueeDelay!);
       });
-    }, marqueeResetDelay)
+    }, delay);
   }
 
   start(timeDelay: number) {
@@ -171,17 +131,17 @@ export default class MarqueeText extends PureComponent<DefaultProps, Props, Stat
 
         if (!this.contentFits) {
           Animated.timing(this.animatedValue, {
-            toValue: -this.distance,
-            duration: duration,
-            easing: easing,
+            toValue: -this.distance!,
+            duration,
+            easing,
             useNativeDriver,
-          }).start(({ finished }) => {
+          }).start(({ finished }: any) => {
             if (finished) {
               if (loop) {
                 this.resetAnimation();
               } else {
                 this.stop();
-                onMarqueeComplete();
+                onMarqueeComplete!();
               }
             }
           });
@@ -197,34 +157,33 @@ export default class MarqueeText extends PureComponent<DefaultProps, Props, Stat
     this.setState({ animating: false });
   }
 
-  shouldAnimate(distance: number) {
-    return distance > 0;
-  }
-
-  async calculateMetrics() {
+  calculateMetrics = async (): Promise<void> => {
     try {
-      const measureWidth = node =>
+      if (!this.containerRef.current || !this.textRef.current) {
+        return;
+      }
+
+      const measureWidth = (component: ScrollView | Text): Promise<number> =>
         new Promise(resolve => {
-          UIManager.measure(findNodeHandle(node), (x, y, w) => {
+          UIManager.measure(findNodeHandle(component), (x: number, y: number, w: number) => {
             // console.log('Width: ' + w);
             return resolve(w);
           });
         });
 
       const [containerWidth, textWidth] = await Promise.all([
-        measureWidth(this.containerRef),
-        measureWidth(this.textRef),
+        measureWidth(this.containerRef.current),
+        measureWidth(this.textRef.current),
       ]);
 
       this.distance = textWidth - containerWidth;
-      this.contentFits = !this.shouldAnimate(this.distance);
-
-      return [];
+      this.contentFits = !MarqueeText.shouldAnimate(this.distance);
       // console.log(`distance: ${this.distance}, contentFits: ${this.contentFits}`);
     } catch (error) {
+      // tslint:disable-next-line
       console.warn(error);
     }
-  }
+  };
 
   invalidateMetrics() {
     // Null distance is the special value to allow recalculation
@@ -236,43 +195,42 @@ export default class MarqueeText extends PureComponent<DefaultProps, Props, Stat
   /**
    * Clears the timer
    */
-  clearTimeout() {
+  clearTimeout(): void {
     if (this.timer) {
       clearTimeout(this.timer);
-      this.timer = null;
+      this.timer = 0;
       // console.log("Currently running timeout is cleared!!!");
     }
   }
 
   /**
    * Starts a new timer
-    */
-  setTimeout(fn: Function, time: number = 0) {
+   */
+  setTimeout(fn: any, time: number = 0): void {
     this.clearTimeout();
     this.timer = setTimeout(fn, time);
   }
 
-  render() {
+  render(): ReactNode {
     const { children, style, ...rest } = this.props;
     const { animating } = this.state;
     const { width, height } = StyleSheet.flatten(style);
 
     return (
       <View style={[styles.container, { width, height }]}>
-        <Text numberOfLines={1} {...rest} style={[ style, { opacity: animating ? 0 : 1 }]}>
+        <Text numberOfLines={1} {...rest} style={[style, { opacity: animating ? 0 : 1 }]}>
           {children}
         </Text>
         <ScrollView
-          ref={c => (this.containerRef = c)}
+          ref={this.containerRef}
           style={StyleSheet.absoluteFillObject}
-          display={animating ? 'flex' : 'none'}
           showsHorizontalScrollIndicator={false}
-          horizontal
+          horizontal={true}
           scrollEnabled={false}
-          onContentSizeChange={() => this.calculateMetrics()}
+          onContentSizeChange={this.calculateMetrics}
         >
           <Animated.Text
-            ref={c => (this.textRef = c)}
+            ref={this.textRef}
             numberOfLines={1}
             {...rest}
             style={[style, { transform: [{ translateX: this.animatedValue }], width: null }]}

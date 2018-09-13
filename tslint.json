@@ -1,0 +1,44 @@
+{
+  "defaultSeverity": "error",
+  "extends": [
+    "tslint:recommended",
+    "tslint-react",
+    "tslint-eslint-rules",
+    "tslint-config-prettier"
+  ],
+  "jsRules": {
+    "no-underscore-dangle": "off",
+    "no-unused-vars": ["error", { "argsIgnorePattern": "[iI]gnored" }],
+    "lines-between-class-members": "off",
+    "class-methods-use-this": "off",
+    "camelcase": "off",
+
+    "react/display-name": "off",
+    "react/no-this-in-sfc": "off",
+    "react/jsx-filename-extension": [1, { "extensions": [".js", ".jsx"] }],
+    "react/destructuring-assignment": "off",
+
+    "import/prefer-default-export": "off",
+    "no-unused-expressions": ["error", { "allowTernary": true }]
+  },
+  "rules": {
+    "prettier": true,
+    "no-implicit-dependencies": false,
+    "no-submodule-imports": false,
+    "ordered-imports": false,
+    "jsx-no-lambda": false,
+    "member-access": [true, "no-public"],
+    "object-literal-sort-keys": false,
+    "no-empty": false,
+    "variable-name": [true, "check-format", "allow-pascal-case", "allow-snake-case"],
+    "no-namespace": [true, "allow-declarations"]
+  },
+  "rulesDirectory": [
+    "tslint-plugin-prettier"
+  ],
+  "linterOptions": {
+    "exclude": [
+      "src/types/**/*"
+    ]
+  }
+}

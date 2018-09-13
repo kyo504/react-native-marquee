@@ -2,7 +2,7 @@
   "name": "react-native-marquee",
   "version": "0.3.2",
   "description": "React Native Marquee Text Component",
-  "main": "index.js",
+  "main": "index.tsx",
   "directories": {
     "example": "example"
   },
@@ -24,5 +24,21 @@
   "bugs": {
     "url": "https://github.com/kyo504/react-native-marquee/issues"
   },
-  "homepage": "https://github.com/kyo504/react-native-marquee#readme"
+  "homepage": "https://github.com/kyo504/react-native-marquee#readme",
+  "peerDependencies": {
+    "react": ">= 16.5.0",
+    "react-native": ">= 0.57.0"
+  },
+  "devDependencies": {
+    "@types/react": "16.4.14",
+    "@types/react-native": "0.56.18",
+    "@types/react-test-renderer": "16.0.2",
+    "prettier": "1.14.2",
+    "tslint": "5.11.0",
+    "tslint-config-prettier": "1.15.0",
+    "tslint-eslint-rules": "5.4.0",
+    "tslint-plugin-prettier": "1.3.0",
+    "tslint-react": "3.6.0",
+    "typescript": "3.0.3"
+  }
 }
