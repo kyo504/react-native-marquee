@@ -1,0 +1,15 @@
+# for WebStorm
+.idea/
+
+# for npm
+node_modules/
+npm-shrinkwrap.json
+
+example/
+.gitignore
+.editorconfig
+.prettierrc
+tslint.json
+
+npm-debug.log
+yarn-error.log

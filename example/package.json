@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "start": "node node_modules/react-native/local-cli/cli.js start",
-    "test": "jest"
+    "test": "jest",
+    "reset": "rm -rf node_modules/ && yarn cache clean && rm -rf $TMPDIR/react-* && yarn install"
   },
   "dependencies": {
     "react": "16.5.0",

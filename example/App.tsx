@@ -1,15 +1,15 @@
-import React from 'react';
-import { StyleSheet, View, Button, Text, Animated } from 'react-native';
+import React, { Component } from 'react';
+import { StyleSheet, View, Button, Text } from 'react-native';
 import MarqueeText from 'react-native-marquee';
 
-export default class MarqueeTextSample extends React.Component {
-  constructor(props) {
-    super(props);
+interface IState {
+  text: string;
+}
 
-    this.state = {
-      text: 'Resets the marquee and restarts it after `marqueeDelay` millisecons.',
-    };
-  }
+export default class MarqueeTextSample extends Component {
+  state: IState = {
+    text: 'Resets the marquee and restarts it after `marqueeDelay` millisecons.',
+  };
 
   render() {
     return (
@@ -18,12 +18,13 @@ export default class MarqueeTextSample extends React.Component {
           <MarqueeText
             style={{ fontSize: 24 }}
             duration={3000}
-            marqueeOnStart
-            loop
+            marqueeOnStart={true}
+            loop={true}
             marqueeDelay={1000}
             marqueeResetDelay={1000}
           >
-            Lorem Ipsum is simply dummy text of the printing and typesetting industry and typesetting industry.
+            Lorem Ipsum is simply dummy text of the printing and typesetting industry and
+            typesetting industry.
           </MarqueeText>
         </View>
         <View style={{ marginVertical: 20 }}>
@@ -31,8 +32,8 @@ export default class MarqueeTextSample extends React.Component {
           <MarqueeText
             style={{ fontSize: 24 }}
             duration={3000}
-            marqueeOnStart
-            loop
+            marqueeOnStart={true}
+            loop={true}
             marqueeDelay={1000}
             marqueeResetDelay={1000}
           >
