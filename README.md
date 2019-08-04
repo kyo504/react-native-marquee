@@ -2,12 +2,6 @@
 
 A pure JavaScript marquee text component for react native.
 
-## Showcase
-
-This app is available on [Android](https://play.google.com/store/apps/details?id=com.feedyourmusic&hl=ko) and [iOS](https://itunes.apple.com/kr/app/피드유어뮤직-언더그라운드-랩-뮤직-플레이어/id1193105670?mt=8).
-
-![feedyourmusic](https://i.imgur.com/I4J2vym.gif=200x)
-
 ## Installation
 
 ```

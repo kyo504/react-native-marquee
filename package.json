@@ -13,12 +13,7 @@
     "type": "git",
     "url": "git+https://github.com/kyo504/react-native-marquee.git"
   },
-  "keywords": [
-    "react-native",
-    "marquee",
-    "ios",
-    "android"
-  ],
+  "keywords": ["react-native", "marquee", "ios", "android"],
   "author": "Hunkyo Jung <hunkyo.jung@gmail.com>",
   "license": "MIT",
   "bugs": {
@@ -30,15 +25,22 @@
     "react-native": ">= 0.57.0"
   },
   "devDependencies": {
-    "@types/react": "16.4.14",
-    "@types/react-native": "0.56.18",
-    "@types/react-test-renderer": "16.0.2",
-    "prettier": "1.14.2",
-    "tslint": "5.11.0",
-    "tslint-config-prettier": "1.15.0",
-    "tslint-eslint-rules": "5.4.0",
-    "tslint-plugin-prettier": "1.3.0",
-    "tslint-react": "3.6.0",
-    "typescript": "3.0.3"
+    "@react-native-community/eslint-config": "^0.0.5",
+    "@types/react": "^16.8.24",
+    "@types/react-native": "^0.60.3",
+    "eslint": "^6.1.0",
+    "eslint-config-prettier": "^6.0.0",
+    "husky": "3.0.2",
+    "lint-staged": "9.2.1",
+    "prettier": "^1.18.2",
+    "typescript": "^3.5.3"
+  },
+  "lint-staged": {
+    "src/**/*.{ts,tsx}": ["prettier --write", "eslint --fix", "git add"]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
   }
 }

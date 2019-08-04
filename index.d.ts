@@ -45,6 +45,5 @@ declare module 'react-native-marquee' {
     useNativeDriver?: boolean;
   }
 
-
   export class MarqueeText extends React.Component<IMarqueeTextProps> {}
 }
