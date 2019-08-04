@@ -1,6 +1,6 @@
 {
   "name": "react-native-marquee",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "React Native Marquee Text Component",
   "main": "index.tsx",
   "directories": {
