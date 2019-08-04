@@ -11,11 +11,12 @@ import {
   StyleProp,
   TextStyle,
   EasingFunction,
+  TextProps,
 } from 'react-native';
 
 const { UIManager } = NativeModules;
 
-export interface IMarqueeTextProps {
+export interface IMarqueeTextProps extends TextProps {
   style?: StyleProp<TextStyle>;
   duration?: number;
   easing?: EasingFunction;
