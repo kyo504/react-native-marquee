@@ -80,8 +80,8 @@ export default class MarqueeText extends PureComponent<IMarqueeTextProps, IMarqu
     }
   }
 
-  componentWillReceiveProps(nextProps: IMarqueeTextProps): void {
-    if (this.props.children !== nextProps.children) {
+  componentDidUpdate(props: IMarqueeTextProps, state: IMarqueeTextState): void {
+    if (this.props.children !== props.children) {
       this.invalidateMetrics();
       this.resetAnimation();
     }
