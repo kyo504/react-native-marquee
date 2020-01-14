@@ -127,8 +127,8 @@ export default class MarqueeText extends PureComponent<IMarqueeTextProps, IMarqu
     const callback = () => {
       this.setState({ animating: true });
 
-      this.setTimeout(() => {
-        this.calculateMetrics();
+      this.setTimeout(async () => {
+        await this.calculateMetrics();
 
         if (!this.contentFits) {
           Animated.timing(this.animatedValue, {
