@@ -42,7 +42,7 @@ export default class MarqueeText extends PureComponent<IMarqueeTextProps, IMarqu
     marqueeOnStart: false,
     marqueeDelay: 0,
     marqueeResetDelay: 0,
-    onMarqueeComplete: () => {},
+    onMarqueeComplete: () => { },
     useNativeDriver: true,
   };
 
@@ -215,11 +215,11 @@ export default class MarqueeText extends PureComponent<IMarqueeTextProps, IMarqu
   render(): ReactNode {
     const { children, style, ...rest } = this.props;
     const { animating } = this.state;
-    const { width, height } = StyleSheet.flatten(style);
+    const { width, height, opacity } = StyleSheet.flatten(style);
 
     return (
       <View style={[styles.container, { width, height }]}>
-        <Text numberOfLines={1} {...rest} style={[style, { opacity: animating ? 0 : 1 }]}>
+        <Text numberOfLines={1} {...rest} style={[style, { opacity: opacity ? 0 : animating ? 0 : 1 }]}>
           {children}
         </Text>
         <ScrollView
