@@ -1,17 +1,17 @@
 import React, { PureComponent, ReactNode } from 'react';
 import {
-  StyleSheet,
   Animated,
   Easing,
-  Text,
-  View,
-  ScrollView,
-  NativeModules,
-  findNodeHandle,
-  StyleProp,
-  TextStyle,
   EasingFunction,
+  findNodeHandle,
+  NativeModules,
+  ScrollView,
+  StyleProp,
+  StyleSheet,
+  Text,
   TextProps,
+  TextStyle,
+  View,
 } from 'react-native';
 
 const { UIManager } = NativeModules;
@@ -33,7 +33,7 @@ export interface IMarqueeTextState {
   animating: boolean;
 }
 
-export default class MarqueeText extends PureComponent<IMarqueeTextProps, IMarqueeTextState> {
+class MarqueeText extends PureComponent<IMarqueeTextProps, IMarqueeTextState> {
   static defaultProps: Partial<IMarqueeTextProps> = {
     style: {},
     duration: 3000,
@@ -59,7 +59,7 @@ export default class MarqueeText extends PureComponent<IMarqueeTextProps, IMarqu
   private animatedValue: Animated.Value;
   private textRef: React.RefObject<Text>;
   private containerRef: React.RefObject<ScrollView>;
-  private timer: number;
+  private timer?: ReturnType<typeof setTimeout>;
 
   constructor(props: IMarqueeTextProps) {
     super(props);
@@ -69,7 +69,6 @@ export default class MarqueeText extends PureComponent<IMarqueeTextProps, IMarqu
     this.distance = null;
     this.textRef = React.createRef();
     this.containerRef = React.createRef();
-    this.timer = 0;
 
     this.invalidateMetrics();
   }
@@ -95,7 +94,7 @@ export default class MarqueeText extends PureComponent<IMarqueeTextProps, IMarqu
     this.clearTimeout();
   }
 
-  startAnimation(timeDelay: number): void {
+  startAnimation(timeDelay: number = 0): void {
     if (this.state.animating) {
       return;
     }
@@ -135,7 +134,7 @@ export default class MarqueeText extends PureComponent<IMarqueeTextProps, IMarqu
             toValue: -this.distance!,
             duration,
             easing,
-            useNativeDriver,
+            useNativeDriver: useNativeDriver!,
           }).start(({ finished }: any) => {
             if (finished) {
               if (loop) {
@@ -165,7 +164,7 @@ export default class MarqueeText extends PureComponent<IMarqueeTextProps, IMarqu
       }
 
       const measureWidth = (component: ScrollView | Text): Promise<number> =>
-        new Promise(resolve => {
+        new Promise((resolve) => {
           UIManager.measure(findNodeHandle(component), (x: number, y: number, w: number) => {
             // console.log('Width: ' + w);
             return resolve(w);
@@ -234,7 +233,13 @@ export default class MarqueeText extends PureComponent<IMarqueeTextProps, IMarqu
             ref={this.textRef}
             numberOfLines={1}
             {...rest}
-            style={[style, { transform: [{ translateX: this.animatedValue }], width: null }]}
+            style={[
+              style,
+              {
+                transform: [{ translateX: this.animatedValue }],
+                width: undefined,
+              },
+            ]}
           >
             {children}
           </Animated.Text>
@@ -249,3 +254,5 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
 });
+
+export default MarqueeText;
