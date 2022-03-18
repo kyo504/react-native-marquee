@@ -1,0 +1,13 @@
+{
+  "git": {
+    "requireUpstream": false,
+    "commitMessage": "chore(release): ${version}",
+    "requireCleanWorkingDir": false
+  },
+  "npm": {
+    "publish": true
+  },
+  "github": {
+    "release": true
+  }
+}
