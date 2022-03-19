@@ -126,8 +126,8 @@ class MarqueeText extends PureComponent<IMarqueeTextProps, IMarqueeTextState> {
     const callback = () => {
       this.setState({ animating: true });
 
-      this.setTimeout(() => {
-        this.calculateMetrics();
+      this.setTimeout(async () => {
+        await this.calculateMetrics();
 
         if (!this.contentFits) {
           Animated.timing(this.animatedValue, {
