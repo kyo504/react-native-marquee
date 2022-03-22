@@ -23,11 +23,10 @@ export default class MarqueeTextSample extends Component {
       <View style={styles.container}>
         <MarqueeText
           style={{ fontSize: 24 }}
-          duration={3000}
-          marqueeOnStart
-          loop
-          marqueeDelay={1000}
-          marqueeResetDelay={1000}
+          speed={1}
+          marqueeOnStart={true}
+          loop={true}
+          delay={1000}
         >
           Lorem Ipsum is simply dummy text of the printing and typesetting industry and typesetting industry.
         </MarqueeText>
@@ -46,26 +45,24 @@ const styles = StyleSheet.create({
 
 ## Properties
 
-| Prop                  | Type     | Optional | Default                   | Description
-| --------------------- | -------- | -------- | ------------------------- | -----------
-| style                 | StyleObj | true     | -                         | text style
-| duration              | number   | true     | 3000                      | Number of milliseconds until animation finishes from start.
-| loop                  | boolean  | true     | false                     | Set this true when animation repeats.
-| marqueeOnStart        | boolean  | true     | false                     | Set this true while waiting for new data from a refresh.
-| marqueeResetDelay     | number   | true     | 0                         | Number of milliseconds to wait before resetting the marquee position after it finishes.
-| marqueeDelay          | number   | true     | 0                         | Number of milliseconds to wait before starting or restarting marquee.
-| onMarqueeComplete     | function | true     | -                         | Callback function for when the marquee completes its animation
-| useNativeDriver       | boolean  | true     | false                     | Set this truen if you want to use native driver
-| easing                | function | true     | inOut                     | Easing function to define animation curve.
+MarqueeText component basically inherits TextProps and the followings are additional ones: 
+
+| Prop              | Type     | Optional | Default | Description
+|-------------------|----------|----------|---------| -----------
+| marqueeOnStart    | boolean  | true     | true    | A flag whether to start marquee animation right after render
+| speed             | number   | true     | 1       | Speed calculated as pixels/second
+| loop              | boolean  | true     | true    | A flag whether to loop marquee animation or not
+| delay             | number   | true     | 0       | Duration to delay the animation after render, in milliseconds
+| onMarqueeComplete | function | true     | void    | A callback for when the marquee finishes animation and stops
 
 ## Methods
 
 These methods are optional, you can use the isOpen property instead
 
-| Prop             | Params          | Description                          |
-| :--------------- |:---------------:| :---------------:|
-| startAnimation   | delay           | Start animation  |
-| stopAnimation    | -               | Stop animation   |
+| Prop    | Params | Description                          |
+|:--------|:------:| :---------------:|
+| start   |   -    | Start animation  |
+| stop    |   -    | Stop animation   |
 
 ## Contribution
 
