@@ -36,6 +36,11 @@ export interface MarqueeTextProps extends TextProps {
    * A callback for when the marquee finishes animation and stops
    */
   onMarqueeComplete?: () => void;
+  /**
+   * A flag to enable consecutive mode that imitates the default behavior of HTML marquee element
+   * Does not take effect if loop is false
+   */
+  consecutive?: boolean;
 }
 
 export interface MarqueeTextHandles {
@@ -57,6 +62,10 @@ const createAnimation = (
     loop: boolean;
     delay: number;
   },
+  consecutive?: {
+    resetToValue: number;
+    duration: number;
+  },
 ): Animated.CompositeAnimation => {
   const baseAnimation = Animated.timing(animatedValue, {
     easing: Easing.linear,
@@ -65,6 +74,26 @@ const createAnimation = (
   });
 
   if (config.loop) {
+    if (consecutive) {
+      return Animated.sequence([
+        baseAnimation,
+        Animated.loop(
+          Animated.sequence([
+            Animated.timing(animatedValue, {
+              toValue: consecutive.resetToValue,
+              duration: 0,
+              useNativeDriver: true,
+            }),
+            Animated.timing(animatedValue, {
+              easing: Easing.linear,
+              useNativeDriver: true,
+              ...config,
+              duration: consecutive.duration,
+            }),
+          ]),
+        ),
+      ]);
+    }
     return Animated.loop(Animated.sequence([baseAnimation, Animated.delay(1000)]));
   }
 
@@ -78,6 +107,7 @@ const MarqueeText = (props: MarqueeTextProps, ref: Ref<MarqueeTextHandles>): JSX
     speed = 1,
     loop = true,
     delay = 0,
+    consecutive = false,
     onMarqueeComplete,
     children,
     ...restProps
@@ -96,11 +126,13 @@ const MarqueeText = (props: MarqueeTextProps, ref: Ref<MarqueeTextHandles>): JSX
     speed: number;
     loop: boolean;
     delay: number;
+    consecutive: boolean;
   }>({
     marqueeOnStart,
     speed,
     loop,
     delay,
+    consecutive,
   });
 
   const stopAnimation = useCallback(() => {
@@ -125,11 +157,22 @@ const MarqueeText = (props: MarqueeTextProps, ref: Ref<MarqueeTextHandles>): JSX
       return;
     }
 
-    animation.current = createAnimation(animatedValue.current, {
-      ...config.current,
-      toValue: -distance,
-      duration: PixelRatio.getPixelSizeForLayoutSize(marqueeTextWidth.current) / config.current.speed,
-    });
+    const baseDuration = PixelRatio.getPixelSizeForLayoutSize(marqueeTextWidth.current) / config.current.speed;
+    const { consecutive } = config.current;
+    animation.current = createAnimation(
+      animatedValue.current,
+      {
+        ...config.current,
+        toValue: consecutive ? -marqueeTextWidth.current : -distance,
+        duration: consecutive ? baseDuration * (marqueeTextWidth.current / distance) : baseDuration,
+      },
+      consecutive
+        ? {
+            resetToValue: containerWidth.current,
+            duration: baseDuration * ((containerWidth.current + marqueeTextWidth.current) / distance),
+          }
+        : undefined,
+    );
 
     animation.current.start((): void => {
       setIsAnimating(false);
@@ -165,7 +208,7 @@ const MarqueeText = (props: MarqueeTextProps, ref: Ref<MarqueeTextHandles>): JSX
 
       const measureWidth = (component: ScrollView | Text): Promise<number> =>
         new Promise(resolve => {
-          UIManager.measure(findNodeHandle(component), (x: number, y: number, w: number) => {
+          UIManager.measure(findNodeHandle(component), (_x: number, _y: number, w: number) => {
             return resolve(w);
           });
         });
