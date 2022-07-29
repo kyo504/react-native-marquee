@@ -158,15 +158,15 @@ const MarqueeText = (props: MarqueeTextProps, ref: Ref<MarqueeTextHandles>): JSX
     }
 
     const baseDuration = PixelRatio.getPixelSizeForLayoutSize(marqueeTextWidth.current) / config.current.speed;
-    const { consecutive } = config.current;
+    const { consecutive: isConsecutive } = config.current;
     animation.current = createAnimation(
       animatedValue.current,
       {
         ...config.current,
-        toValue: consecutive ? -marqueeTextWidth.current : -distance,
-        duration: consecutive ? baseDuration * (marqueeTextWidth.current / distance) : baseDuration,
+        toValue: isConsecutive ? -marqueeTextWidth.current : -distance,
+        duration: isConsecutive ? baseDuration * (marqueeTextWidth.current / distance) : baseDuration,
       },
-      consecutive
+      isConsecutive
         ? {
             resetToValue: containerWidth.current,
             duration: baseDuration * ((containerWidth.current + marqueeTextWidth.current) / distance),
