@@ -1,4 +1,6 @@
-import React, { Ref, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import type { Ref } from 'react';
+import React, { useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import type { TextProps } from 'react-native';
 import {
   Animated,
   Easing,
@@ -8,7 +10,6 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextProps,
   View,
 } from 'react-native';
 
@@ -207,8 +208,7 @@ const MarqueeText = (props: MarqueeTextProps, ref: Ref<MarqueeTextHandles>): JSX
             showsHorizontalScrollIndicator={false}
             horizontal={true}
             scrollEnabled={false}
-            onContentSizeChange={calculateMetrics}
-          >
+            onContentSizeChange={calculateMetrics}>
             <Animated.Text
               ref={textRef}
               numberOfLines={1}
@@ -220,8 +220,7 @@ const MarqueeText = (props: MarqueeTextProps, ref: Ref<MarqueeTextHandles>): JSX
                   opacity: isAnimating ? 1 : 0,
                   width: '100%',
                 },
-              ]}
-            >
+              ]}>
               {children}
             </Animated.Text>
           </ScrollView>
