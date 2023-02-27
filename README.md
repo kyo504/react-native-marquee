@@ -12,7 +12,7 @@ yarn add react-native-marquee
 
 ## Usage
 
-```
+```Javascript
 import React, { Component } from 'react';
 import { StyleSheet, View } from 'react-native';
 import MarqueeText from 'react-native-marquee';
