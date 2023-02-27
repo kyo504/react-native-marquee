@@ -14,6 +14,7 @@ const HomeScreen = () => {
     speed: 1,
     loop: true,
     delay: 0,
+    consecutive: false,
   });
   const marqueeRef = useRef<MarqueeTextHandles>(null);
 
@@ -51,6 +52,14 @@ const HomeScreen = () => {
           <Switch
             value={config.marqueeOnStart}
             onValueChange={v => setConfig(prev => ({ ...prev, marqueeOnStart: v }))}
+          />
+        </View>
+
+        <View style={styles.itemContainer}>
+          <Text style={styles.itemText}>Consecutive mode</Text>
+          <Switch
+            value={config.consecutive}
+            onValueChange={v => setConfig(prev => ({ ...prev, consecutive: v }))}
           />
         </View>
 
