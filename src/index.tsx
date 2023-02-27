@@ -84,7 +84,6 @@ const MarqueeText = (props: MarqueeTextProps, ref: Ref<MarqueeTextHandles>): JSX
   } = props;
 
   const [isAnimating, setIsAnimating] = useState<boolean>(false);
-  const [isMounted, setIsMounted] = useState(false);
 
   const containerWidth = useRef<number | null>(null);
   const marqueeTextWidth = useRef<number | null>(null);
@@ -150,10 +149,6 @@ const MarqueeText = (props: MarqueeTextProps, ref: Ref<MarqueeTextHandles>): JSX
   });
 
   useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  useEffect(() => {
     if (!config.current.marqueeOnStart) {
       return;
     }
@@ -196,37 +191,34 @@ const MarqueeText = (props: MarqueeTextProps, ref: Ref<MarqueeTextHandles>): JSX
   const { width, height } = StyleSheet.flatten(style || {});
 
   return (
-    <>
-      {!isMounted ? null : (
-        <View style={[styles.container, { width, height }]}>
-          <Text numberOfLines={1} {...restProps} style={[style, { opacity: isAnimating ? 0 : 1 }]}>
-            {children}
-          </Text>
-          <ScrollView
-            ref={containerRef}
-            style={StyleSheet.absoluteFillObject}
-            showsHorizontalScrollIndicator={false}
-            horizontal={true}
-            scrollEnabled={false}
-            onContentSizeChange={calculateMetrics}>
-            <Animated.Text
-              ref={textRef}
-              numberOfLines={1}
-              {...restProps}
-              style={[
-                style,
-                {
-                  transform: [{ translateX: animatedValue.current }],
-                  opacity: isAnimating ? 1 : 0,
-                  width: '100%',
-                },
-              ]}>
-              {children}
-            </Animated.Text>
-          </ScrollView>
-        </View>
-      )}
-    </>
+    <View style={[styles.container, { width, height }]}>
+      <Text numberOfLines={1} {...restProps} style={[style, { opacity: isAnimating ? 0 : 1 }]}>
+        {children}
+      </Text>
+
+      <ScrollView
+        ref={containerRef}
+        style={StyleSheet.absoluteFillObject}
+        showsHorizontalScrollIndicator={false}
+        horizontal={true}
+        scrollEnabled={false}
+        onContentSizeChange={calculateMetrics}>
+        <Animated.Text
+          ref={textRef}
+          numberOfLines={1}
+          {...restProps}
+          style={[
+            style,
+            {
+              transform: [{ translateX: animatedValue.current }],
+              opacity: isAnimating ? 1 : 0,
+              width: '100%',
+            },
+          ]}>
+          {children}
+        </Animated.Text>
+      </ScrollView>
+    </View>
   );
 };
 
