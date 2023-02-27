@@ -57,10 +57,7 @@ const HomeScreen = () => {
 
         <View style={styles.itemContainer}>
           <Text style={styles.itemText}>Consecutive mode</Text>
-          <Switch
-            value={config.consecutive}
-            onValueChange={v => setConfig(prev => ({ ...prev, consecutive: v }))}
-          />
+          <Switch value={config.consecutive} onValueChange={v => setConfig(prev => ({ ...prev, consecutive: v }))} />
         </View>
 
         <View style={styles.itemContainer}>
