@@ -54,13 +54,14 @@ MarqueeText component basically inherits TextProps and the followings are additi
 | loop              | boolean  | true     | true    | A flag whether to loop marquee animation or not
 | delay             | number   | true     | 0       | Duration to delay the animation after render, in milliseconds
 | onMarqueeComplete | function | true     | void    | A callback for when the marquee finishes animation and stops
+| consecutive       | boolean  | true     | false   | A flag to enable consecutive mode that imitates the default behavior of HTML marquee element. Does not take effect if loop is false
 
 ## Methods
 
 These methods are optional, you can use the isOpen property instead
 
-| Prop    | Params | Description                          |
-|:--------|:------:| :---------------:|
+| Prop    | Params | Description      |
+|:--------|:------:|:----------------:|
 | start   |   -    | Start animation  |
 | stop    |   -    | Stop animation   |
 
