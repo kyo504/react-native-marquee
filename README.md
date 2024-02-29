@@ -55,6 +55,7 @@ MarqueeText component basically inherits TextProps and the followings are additi
 | delay             | number   | true     | 0       | Duration to delay the animation after render, in milliseconds
 | onMarqueeComplete | function | true     | void    | A callback for when the marquee finishes animation and stops
 | consecutive       | boolean  | true     | false   | A flag to enable consecutive mode that imitates the default behavior of HTML marquee element. Does not take effect if loop is false
+| isRTL             | boolean  | true     | I18nManager.isRTL   | A flag to override animation direction
 
 ## Methods
 

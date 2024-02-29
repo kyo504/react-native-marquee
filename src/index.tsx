@@ -11,6 +11,7 @@ import {
   StyleSheet,
   Text,
   View,
+  I18nManager,
 } from 'react-native';
 
 const { UIManager } = NativeModules;
@@ -41,6 +42,10 @@ export interface MarqueeTextProps extends TextProps {
    * Does not take effect if loop is false
    */
   consecutive?: boolean;
+  /**
+   * A flag to override animation direction
+   */
+  isRTL?: boolean;
 }
 
 export interface MarqueeTextHandles {
@@ -108,6 +113,7 @@ const MarqueeText = (props: MarqueeTextProps, ref: Ref<MarqueeTextHandles>): JSX
     loop = true,
     delay = 0,
     consecutive = false,
+    isRTL = I18nManager.isRTL,
     onMarqueeComplete,
     children,
     ...restProps
@@ -127,12 +133,14 @@ const MarqueeText = (props: MarqueeTextProps, ref: Ref<MarqueeTextHandles>): JSX
     loop: boolean;
     delay: number;
     consecutive: boolean;
+    isRTL: boolean;
   }>({
     marqueeOnStart,
     speed,
     loop,
     delay,
     consecutive,
+    isRTL,
   });
 
   const stopAnimation = useCallback(() => {
@@ -163,7 +171,7 @@ const MarqueeText = (props: MarqueeTextProps, ref: Ref<MarqueeTextHandles>): JSX
       animatedValue.current,
       {
         ...config.current,
-        toValue: isConsecutive ? -marqueeTextWidth.current : -distance,
+        toValue: (isConsecutive ? marqueeTextWidth.current : distance) * (config.current.isRTL ? 1 : -1),
         duration: isConsecutive ? baseDuration * (marqueeTextWidth.current / distance) : baseDuration,
       },
       isConsecutive
