@@ -140,7 +140,7 @@ const MarqueeText = (props: MarqueeTextProps, ref: Ref<MarqueeTextHandles>): JSX
     loop,
     delay,
     consecutive,
-    isRTL
+    isRTL,
   });
 
   const stopAnimation = useCallback(() => {
@@ -171,7 +171,7 @@ const MarqueeText = (props: MarqueeTextProps, ref: Ref<MarqueeTextHandles>): JSX
       animatedValue.current,
       {
         ...config.current,
-        toValue: (isConsecutive ? marqueeTextWidth.current : distance) * (isRTL ? 1 : -1),
+        toValue: (isConsecutive ? marqueeTextWidth.current : distance) * (config.current.isRTL ? 1 : -1),
         duration: isConsecutive ? baseDuration * (marqueeTextWidth.current / distance) : baseDuration,
       },
       isConsecutive
